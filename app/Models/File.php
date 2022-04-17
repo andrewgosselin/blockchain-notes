@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Network;
 
-class FileBlob extends Model
+class File extends Model
 {
     protected static function boot()
     {
@@ -15,10 +15,15 @@ class FileBlob extends Model
                 $model->network = config("network-config.selected_network");
             }
         });
+
+        self::deleting(function($model) {
+            $model->remove();
+            abort(500);
+        });
     }
 
     protected $fillable = [
-        "user_id", "cid", "name", "type", "network"
+        "owner_type", "parent_id", "cid", "name", "type", "network"
     ];
 
     public function getContentAttribute() {
@@ -26,9 +31,11 @@ class FileBlob extends Model
         return $client->get($this->cid)["data"];
     }
 
-    public function updateFile($content) {
+    public function revise($content) {
         $client = Network::client();
         $response = $client->update($this->cid, $content);
+        $this->cid = $response["data"]["cid"];
+        $this->save();
         return $content;
     }
 
@@ -37,5 +44,10 @@ class FileBlob extends Model
         $response = $client->store($content);
         $this->cid = $response["data"]["cid"];
         $this->save();
+    }
+
+    public function remove() {
+        $client = Network::client();
+        $response = $client->destroy($this->cid);
     }
 }

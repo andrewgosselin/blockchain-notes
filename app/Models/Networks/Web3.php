@@ -31,12 +31,29 @@ class Web3
         ];
     }
 
-    public function update($file) {
-        
+    public function update($cid, $content) {
+        $this->destroy($cid);
+        return $this->store($content);
     }
 
     public function get($cid) {
         $response = Http::get($cid . ".ipfs.dweb.link");
+        
+        return [
+            "data" => $response->json(),
+            "meta" => [
+                "success" => $response->successful()
+            ]
+        ];
+    }
+
+    public function destroy($cid) {
+        $response = Http::withHeaders(
+            [
+                "Authorization" => "Bearer " . $this->token
+            ]
+        )
+        ->delete($this->url . "/user/uploads/" . $cid);
         
         return [
             "data" => $response->json(),

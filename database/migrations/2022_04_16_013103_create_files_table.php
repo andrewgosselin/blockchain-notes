@@ -15,7 +15,9 @@ return new class extends Migration
     {
         Schema::create('files', function (Blueprint $table) {
             $table->id();
-            $table->string("user_id");
+            $table->string("owner_type")->default("anonymous");
+            $table->string("parent_id");
+            $table->boolean("show_public")->default(true);
             $table->string("cid");
             $table->string("name");
             $table->string("type");
